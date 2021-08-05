@@ -1078,36 +1078,55 @@ async def process_command(message: types.Message):
 async def process_start(message: types.Message):
     conn = sqlite3.connect('db.db')
     cursor = conn.cursor()
-    cursor.execute(f"SELECT ru FROM users WHERE chat_id = '{message.from_user.id}'")
+    cursor.execute(f"SELECT user_group FROM users WHERE chat_id = '{message.from_user.id}'")
     result_set = cursor.fetchall()
     conn.commit()
     conn.close()
-    if result_set[0][0] == 'True':
-        await message.reply(messages.choose_inst, reply_markup=KeyBoards.institute_kb)
-        state = dp.current_state(user=message.from_user.id)
-        await state.set_state(ScheduleUser.all()[0])
+    if result_set[0][0] == None:
+        await bot.send_message(message.from_user.id,
+                               'Простите, но вы не можете использовать /group, т.к. вы не зарегистрированы.\nПросим вас пройти регистрацию с помощью /start.')
     else:
-        await message.reply(messages.choose_inst_en, reply_markup=KeyBoards.institute_kb)
-        state = dp.current_state(user=message.from_user.id)
-        await state.set_state(ScheduleUser.all()[0])
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT ru FROM users WHERE chat_id = '{message.from_user.id}'")
+        result_set = cursor.fetchall()
+        conn.commit()
+        conn.close()
+        if result_set[0][0] == 'True':
+            await message.reply(messages.choose_inst, reply_markup=KeyBoards.institute_kb)
+            state = dp.current_state(user=message.from_user.id)
+            await state.set_state(ScheduleUser.all()[0])
+        else:
+            await message.reply(messages.choose_inst_en, reply_markup=KeyBoards.institute_kb)
+            state = dp.current_state(user=message.from_user.id)
+            await state.set_state(ScheduleUser.all()[0])
 
 
 @dp.message_handler(state='*', commands = 'teacher')
 async def process_start(message: types.Message):
     conn = sqlite3.connect('db.db')
     cursor = conn.cursor()
-    cursor.execute(f"SELECT ru FROM users WHERE chat_id = '{message.from_user.id}'")
+    cursor.execute(f"SELECT user_group FROM users WHERE chat_id = '{message.from_user.id}'")
     result_set = cursor.fetchall()
     conn.commit()
     conn.close()
-    if result_set[0][0] == 'True':
-        state = dp.current_state(user=message.from_user.id)
-        await state.set_state(Teacher.all()[0])
-        await message.reply("Введите фамилию преподавателя:")
+    if result_set[0][0] == None:
+        await bot.send_message(message.from_user.id, 'Простите, но вы не можете использовать /teacher, т.к. вы не зарегистрированы.\nПросим вас пройти регистрацию с помощью /start.')
     else:
-        state = dp.current_state(user=message.from_user.id)
-        await state.set_state(Teacher.all()[0])
-        await message.reply("View the teacher's schedule")
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT ru FROM users WHERE chat_id = '{message.from_user.id}'")
+        result_set = cursor.fetchall()
+        conn.commit()
+        conn.close()
+        if result_set[0][0] == 'True':
+            state = dp.current_state(user=message.from_user.id)
+            await state.set_state(Teacher.all()[0])
+            await message.reply("Введите фамилию преподавателя:")
+        else:
+            state = dp.current_state(user=message.from_user.id)
+            await state.set_state(Teacher.all()[0])
+            await message.reply("View the teacher's schedule")
 
 
 # endregions
@@ -7796,8 +7815,8 @@ async def register_4(message: types.message):
             surname = message.text
             response = requests.get(url + surname).json()
             keyboard = ReplyKeyboardMarkup()
+            keyboard.add("Меню")
             if len(response) != 0:
-                keyboard.add("Меню")
                 for item in response:
                     keyboard.add(item)
                     incoming_inst.append(item)
@@ -7835,8 +7854,9 @@ async def register_4(message: types.message):
             surname = message.text
             response = requests.get(url + surname).json()
             keyboard = ReplyKeyboardMarkup()
+            keyboard.add("Menu")
             if len(response) != 0:
-                keyboard.add("Menu")
+
                 for item in response:
                     keyboard.add(item)
                     incoming_inst.append(item)
