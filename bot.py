@@ -732,6 +732,7 @@ class MyThread3(Thread):
                                 else:
                                     pass
 
+
 @dp.message_handler(state='*', commands='schedule')
 async def process_command(message: types.Message):
     conn = sqlite3.connect('db.db')
@@ -760,6 +761,8 @@ async def process_command(message: types.Message):
         else:
             await dp.current_state(user=message.from_user.id).set_state(CheckSchedule.all()[0])
             await message.reply(messages.day_of_the_week_en, reply_markup=KeyBoards.day_of_the_week_kb_en)
+
+
 @dp.message_handler(state='*', commands='events')
 async def process_command(message: types.Message):
     conn = sqlite3.connect('db.db')
@@ -9190,19 +9193,66 @@ async def schedule_1(message: types.Message):
             else:
                 await bot.send_message(message.from_user.id, messages.what_en)
 
+
 @dp.message_handler(state=Turn_on_off.TURN_0)
 async def register_4(message: types.message):
-    conn = sqlite3.connect('db.db')
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT ru FROM users WHERE chat_id = '{message.from_user.id}'")
-    result_set = cursor.fetchall()
-    cursor.close()
-    is_ru = False
-    if result_set[0][0] == "True":
-        is_ru = True
     switch_text = message.text.lower()
-    if is_ru == True:
-        if switch_text == 'меню':
+    if switch_text == 'меню':
+        is_succeed = False
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT user_id FROM admins")
+        result_set = cursor.fetchall()
+        cursor.close()
+        for item in result_set:
+            if item[0] == message.from_user.id:
+                is_succeed = True
+        if is_succeed:
+            await message.reply(messages.menu
+                                , reply=False, reply_markup=KeyBoards.menu_admin_kb)
+            conn.commit()
+            conn.close()
+            state = dp.current_state(user=message.from_user.id)
+            await state.reset_state()
+        else:
+            await message.reply(messages.menu
+                                , reply=False, reply_markup=KeyBoards.menu_user_kb)
+            conn.commit()
+            conn.close()
+            state = dp.current_state(user=message.from_user.id)
+            await state.reset_state()
+    elif switch_text == 'menu':
+        is_succeed = False
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT user_id FROM admins")
+        result_set = cursor.fetchall()
+        cursor.close()
+        for item in result_set:
+            if item[0] == message.from_user.id:
+                is_succeed = True
+        if is_succeed:
+            await message.reply(messages.menu_en
+                                , reply=False, reply_markup=KeyBoards.menu_admin_kb_en)
+            conn.commit()
+            conn.close()
+            state = dp.current_state(user=message.from_user.id)
+            await state.reset_state()
+        else:
+            await message.reply(messages.menu_en
+                                , reply=False, reply_markup=KeyBoards.menu_user_kb_en)
+            conn.commit()
+            conn.close()
+            state = dp.current_state(user=message.from_user.id)
+            await state.reset_state()
+    else:
+        if switch_text == "выключить рассылку в 7 утра":
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"UPDATE users SET `7utra_on` = '{False}' WHERE chat_id = '{message.from_user.id}'")
+            conn.commit()
+            conn.close()
+            await bot.send_message(message.from_user.id, "Вы успешно выключили рассылку в 7 утра!")
             is_succeed = False
             conn = sqlite3.connect('db.db')
             cursor = conn.cursor()
@@ -9226,133 +9276,13 @@ async def register_4(message: types.message):
                 conn.close()
                 state = dp.current_state(user=message.from_user.id)
                 await state.reset_state()
-        else:
-            if switch_text == "выключить рассылку в 7 утра":
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"UPDATE users SET `7utra_on` = '{False}' WHERE chat_id = '{message.from_user.id}'")
-                conn.commit()
-                conn.close()
-                await bot.send_message(message.from_user.id, "Вы успешно выключили рассылку в 7 утра!")
-                is_succeed = False
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT user_id FROM admins")
-                result_set = cursor.fetchall()
-                cursor.close()
-                for item in result_set:
-                    if item[0] == message.from_user.id:
-                        is_succeed = True
-                if is_succeed:
-                    await message.reply(messages.menu
-                                        , reply=False, reply_markup=KeyBoards.menu_admin_kb)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-                else:
-                    await message.reply(messages.menu
-                                        , reply=False, reply_markup=KeyBoards.menu_user_kb)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-            elif switch_text == "включить рассылку в 7 утра":
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"UPDATE users SET `7utra_on` = '{True}' WHERE chat_id = '{message.from_user.id}'")
-                conn.commit()
-                conn.close()
-                await bot.send_message(message.from_user.id, "Вы успешно включили рассылку в 7 утра!")
-                is_succeed = False
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT user_id FROM admins")
-                result_set = cursor.fetchall()
-                cursor.close()
-                for item in result_set:
-                    if item[0] == message.from_user.id:
-                        is_succeed = True
-                if is_succeed:
-                    await message.reply(messages.menu
-                                        , reply=False, reply_markup=KeyBoards.menu_admin_kb)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-                else:
-                    await message.reply(messages.menu
-                                        , reply=False, reply_markup=KeyBoards.menu_user_kb)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-
-            elif switch_text == "выключить рассылку о наступлении пары":
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"UPDATE users SET `mail_para_on` = '{False}' WHERE chat_id = '{message.from_user.id}'")
-                conn.commit()
-                conn.close()
-                await bot.send_message(message.from_user.id, "Вы успешно выключили рассылку!")
-                is_succeed = False
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT user_id FROM admins")
-                result_set = cursor.fetchall()
-                cursor.close()
-                for item in result_set:
-                    if item[0] == message.from_user.id:
-                        is_succeed = True
-                if is_succeed:
-                    await message.reply(messages.menu
-                                        , reply=False, reply_markup=KeyBoards.menu_admin_kb)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-                else:
-                    await message.reply(messages.menu
-                                        , reply=False, reply_markup=KeyBoards.menu_user_kb)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-            elif switch_text == "включить рассылку о наступлении пары":
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"UPDATE users SET `mail_para_on` = '{True}' WHERE chat_id = '{message.from_user.id}'")
-                conn.commit()
-                conn.close()
-                await bot.send_message(message.from_user.id, "Вы успешно включили рассылку!")
-                is_succeed = False
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT user_id FROM admins")
-                result_set = cursor.fetchall()
-                cursor.close()
-                for item in result_set:
-                    if item[0] == message.from_user.id:
-                        is_succeed = True
-                if is_succeed:
-                    await message.reply(messages.menu
-                                        , reply=False, reply_markup=KeyBoards.menu_admin_kb)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-                else:
-                    await message.reply(messages.menu
-                                        , reply=False, reply_markup=KeyBoards.menu_user_kb)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-            else:
-                await bot.send_message(message.from_user.id, messages.what)
-    else:
-        #english
-        if switch_text == 'menu':
+        elif switch_text == "включить рассылку в 7 утра":
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"UPDATE users SET `7utra_on` = '{True}' WHERE chat_id = '{message.from_user.id}'")
+            conn.commit()
+            conn.close()
+            await bot.send_message(message.from_user.id, "Вы успешно включили рассылку в 7 утра!")
             is_succeed = False
             conn = sqlite3.connect('db.db')
             cursor = conn.cursor()
@@ -9363,21 +9293,85 @@ async def register_4(message: types.message):
                 if item[0] == message.from_user.id:
                     is_succeed = True
             if is_succeed:
-                await message.reply(messages.menu_en
-                                    , reply=False, reply_markup=KeyBoards.menu_admin_kb_en)
+                await message.reply(messages.menu
+                                    , reply=False, reply_markup=KeyBoards.menu_admin_kb)
                 conn.commit()
                 conn.close()
                 state = dp.current_state(user=message.from_user.id)
                 await state.reset_state()
             else:
-                await message.reply(messages.menu_en
-                                    , reply=False, reply_markup=KeyBoards.menu_user_kb_en)
+                await message.reply(messages.menu
+                                    , reply=False, reply_markup=KeyBoards.menu_user_kb)
                 conn.commit()
                 conn.close()
                 state = dp.current_state(user=message.from_user.id)
                 await state.reset_state()
-        else:
-            if switch_text == "turn off the newsletter at 7 am":
+
+        elif switch_text == "выключить рассылку о наступлении пары":
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"UPDATE users SET `mail_para_on` = '{False}' WHERE chat_id = '{message.from_user.id}'")
+            conn.commit()
+            conn.close()
+            await bot.send_message(message.from_user.id, "Вы успешно выключили рассылку!")
+            is_succeed = False
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT user_id FROM admins")
+            result_set = cursor.fetchall()
+            cursor.close()
+            for item in result_set:
+                if item[0] == message.from_user.id:
+                    is_succeed = True
+            if is_succeed:
+                await message.reply(messages.menu
+                                    , reply=False, reply_markup=KeyBoards.menu_admin_kb)
+                conn.commit()
+                conn.close()
+                state = dp.current_state(user=message.from_user.id)
+                await state.reset_state()
+            else:
+                await message.reply(messages.menu
+                                    , reply=False, reply_markup=KeyBoards.menu_user_kb)
+                conn.commit()
+                conn.close()
+                state = dp.current_state(user=message.from_user.id)
+                await state.reset_state()
+        elif switch_text == "включить рассылку о наступлении пары":
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"UPDATE users SET `mail_para_on` = '{True}' WHERE chat_id = '{message.from_user.id}'")
+            conn.commit()
+            conn.close()
+            await bot.send_message(message.from_user.id, "Вы успешно включили рассылку!")
+            is_succeed = False
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT user_id FROM admins")
+            result_set = cursor.fetchall()
+            cursor.close()
+            for item in result_set:
+                if item[0] == message.from_user.id:
+                    is_succeed = True
+            if is_succeed:
+                await message.reply(messages.menu
+                                    , reply=False, reply_markup=KeyBoards.menu_admin_kb)
+                conn.commit()
+                conn.close()
+                state = dp.current_state(user=message.from_user.id)
+                await state.reset_state()
+            else:
+                await message.reply(messages.menu
+                                    , reply=False, reply_markup=KeyBoards.menu_user_kb)
+                conn.commit()
+                conn.close()
+                state = dp.current_state(user=message.from_user.id)
+                await state.reset_state()
+
+
+        #english
+
+        elif switch_text == "turn off the newsletter at 7 am":
                 conn = sqlite3.connect('db.db')
                 cursor = conn.cursor()
                 cursor.execute(f"UPDATE users SET `7utra_on` = '{False}' WHERE chat_id = '{message.from_user.id}'")
@@ -9407,99 +9401,110 @@ async def register_4(message: types.message):
                     conn.close()
                     state = dp.current_state(user=message.from_user.id)
                     await state.reset_state()
-            elif switch_text == "turn on the newsletter at 7 am":
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"UPDATE users SET `7utra_on` = '{True}' WHERE chat_id = '{message.from_user.id}'")
+        elif switch_text == "turn on the newsletter at 7 am":
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"UPDATE users SET `7utra_on` = '{True}' WHERE chat_id = '{message.from_user.id}'")
+            conn.commit()
+            conn.close()
+            await bot.send_message(message.from_user.id, "You have successfully enabled the newsletter at 7 am!")
+            is_succeed = False
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT user_id FROM admins")
+            result_set = cursor.fetchall()
+            cursor.close()
+            for item in result_set:
+                if item[0] == message.from_user.id:
+                    is_succeed = True
+            if is_succeed:
+                await message.reply(messages.menu_en
+                                    , reply=False, reply_markup=KeyBoards.menu_admin_kb_en)
                 conn.commit()
                 conn.close()
-                await bot.send_message(message.from_user.id, "You have successfully enabled the newsletter at 7 am!")
-                is_succeed = False
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT user_id FROM admins")
-                result_set = cursor.fetchall()
-                cursor.close()
-                for item in result_set:
-                    if item[0] == message.from_user.id:
-                        is_succeed = True
-                if is_succeed:
-                    await message.reply(messages.menu_en
-                                        , reply=False, reply_markup=KeyBoards.menu_admin_kb_en)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-                else:
-                    await message.reply(messages.menu_en
-                                        , reply=False, reply_markup=KeyBoards.menu_user_kb_en)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-
-            elif switch_text == "turn off the newsletter about the occurrence of a couple":
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"UPDATE users SET `mail_para_on` = '{False}' WHERE chat_id = '{message.from_user.id}'")
-                conn.commit()
-                conn.close()
-                await bot.send_message(message.from_user.id, "You have successfully turned off the newsletter!")
-                is_succeed = False
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT user_id FROM admins")
-                result_set = cursor.fetchall()
-                cursor.close()
-                for item in result_set:
-                    if item[0] == message.from_user.id:
-                        is_succeed = True
-                if is_succeed:
-                    await message.reply(messages.menu_en
-                                        , reply=False, reply_markup=KeyBoards.menu_admin_kb_en)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-                else:
-                    await message.reply(messages.menu_en
-                                        , reply=False, reply_markup=KeyBoards.menu_user_kb_en)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-            elif switch_text == "turn on the newsletter about the occurrence of a couple":
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"UPDATE users SET `mail_para_on` = '{True}' WHERE chat_id = '{message.from_user.id}'")
-                conn.commit()
-                conn.close()
-                await bot.send_message(message.from_user.id, "You have successfully enabled the newsletter!")
-                is_succeed = False
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT user_id FROM admins")
-                result_set = cursor.fetchall()
-                cursor.close()
-                for item in result_set:
-                    if item[0] == message.from_user.id:
-                        is_succeed = True
-                if is_succeed:
-                    await message.reply(messages.menu_en
-                                        , reply=False, reply_markup=KeyBoards.menu_admin_kb_en)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
-                else:
-                    await message.reply(messages.menu_en
-                                        , reply=False, reply_markup=KeyBoards.menu_user_kb_en)
-                    conn.commit()
-                    conn.close()
-                    state = dp.current_state(user=message.from_user.id)
-                    await state.reset_state()
+                state = dp.current_state(user=message.from_user.id)
+                await state.reset_state()
             else:
+                await message.reply(messages.menu_en
+                                    , reply=False, reply_markup=KeyBoards.menu_user_kb_en)
+                conn.commit()
+                conn.close()
+                state = dp.current_state(user=message.from_user.id)
+                await state.reset_state()
+
+        elif switch_text == "turn off the newsletter about the occurrence of a couple":
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"UPDATE users SET `mail_para_on` = '{False}' WHERE chat_id = '{message.from_user.id}'")
+            conn.commit()
+            conn.close()
+            await bot.send_message(message.from_user.id, "You have successfully turned off the newsletter!")
+            is_succeed = False
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT user_id FROM admins")
+            result_set = cursor.fetchall()
+            cursor.close()
+            for item in result_set:
+                if item[0] == message.from_user.id:
+                    is_succeed = True
+            if is_succeed:
+                await message.reply(messages.menu_en
+                                    , reply=False, reply_markup=KeyBoards.menu_admin_kb_en)
+                conn.commit()
+                conn.close()
+                state = dp.current_state(user=message.from_user.id)
+                await state.reset_state()
+            else:
+                await message.reply(messages.menu_en
+                                    , reply=False, reply_markup=KeyBoards.menu_user_kb_en)
+                conn.commit()
+                conn.close()
+                state = dp.current_state(user=message.from_user.id)
+                await state.reset_state()
+        elif switch_text == "turn on the newsletter about the occurrence of a couple":
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"UPDATE users SET `mail_para_on` = '{True}' WHERE chat_id = '{message.from_user.id}'")
+            conn.commit()
+            conn.close()
+            await bot.send_message(message.from_user.id, "You have successfully enabled the newsletter!")
+            is_succeed = False
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT user_id FROM admins")
+            result_set = cursor.fetchall()
+            cursor.close()
+            for item in result_set:
+                if item[0] == message.from_user.id:
+                    is_succeed = True
+            if is_succeed:
+                await message.reply(messages.menu_en
+                                    , reply=False, reply_markup=KeyBoards.menu_admin_kb_en)
+                conn.commit()
+                conn.close()
+                state = dp.current_state(user=message.from_user.id)
+                await state.reset_state()
+            else:
+                await message.reply(messages.menu_en
+                                    , reply=False, reply_markup=KeyBoards.menu_user_kb_en)
+                conn.commit()
+                conn.close()
+                state = dp.current_state(user=message.from_user.id)
+                await state.reset_state()
+        else:
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT ru FROM users WHERE chat_id = '{message.from_user.id}'")
+            result_set = cursor.fetchall()
+            cursor.close()
+            is_ru = False
+            if result_set[0][0] == "True":
+                is_ru = True
+            if is_ru == False:
                 await bot.send_message(message.from_user.id, messages.what_en)
+            else:
+                await bot.send_message(message.from_user.id, messages.what)
 
 
 @dp.message_handler(state='*', content_types=["text"])
@@ -9515,761 +9520,749 @@ async def handler_message(msg: types.Message):
     if result_set[0][0] == "True":
         is_ru = True
     switch_text = msg.text.lower()
-    if is_ru == True:
-        if switch_text == "расписание":
-            await dp.current_state(user=msg.from_user.id).set_state(CheckSchedule.all()[0])
-            await msg.reply(messages.day_of_the_week, reply_markup=KeyBoards.day_of_the_week_kb)
 
-        elif switch_text == "админ-панель":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT user_id FROM admins")
-            result_set = cursor.fetchall()
-            cursor.execute(f"SELECT user_id, is_teacher FROM admins")
-            result_set2 = cursor.fetchall()
-            cursor.close()
-            is_succeed = False
-            is_teacher = False
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    is_succeed = True
-            for item in result_set2:
-                if item[0] == msg.from_user.id:
-                    if item[1] == "True":
-                        is_teacher = True
-            if is_succeed:
-                if is_teacher:
-                    state = dp.current_state(user=msg.from_user.id)
-                    await state.set_state(AdminPanel.all()[0])
-                    await msg.reply(messages.admin_panel, reply_markup=KeyBoards.admin_panel_teacher)
+    if switch_text == "расписание":
+        await dp.current_state(user=msg.from_user.id).set_state(CheckSchedule.all()[0])
+        await msg.reply(messages.day_of_the_week, reply_markup=KeyBoards.day_of_the_week_kb)
+
+    elif switch_text == "админ-панель":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT user_id FROM admins")
+        result_set = cursor.fetchall()
+        cursor.execute(f"SELECT user_id, is_teacher FROM admins")
+        result_set2 = cursor.fetchall()
+        cursor.close()
+        is_succeed = False
+        is_teacher = False
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                is_succeed = True
+        for item in result_set2:
+            if item[0] == msg.from_user.id:
+                if item[1] == "True":
+                    is_teacher = True
+        if is_succeed:
+            if is_teacher:
+                state = dp.current_state(user=msg.from_user.id)
+                await state.set_state(AdminPanel.all()[0])
+                await msg.reply(messages.admin_panel, reply_markup=KeyBoards.admin_panel_teacher)
+            else:
+                state = dp.current_state(user=msg.from_user.id)
+                await state.set_state(AdminPanel.all()[0])
+                await msg.reply(messages.admin_panel, reply_markup=KeyBoards.admin_panel)
+        else:
+            await msg.reply(messages.not_admin, reply_markup=KeyBoards.menu_admin_kb)
+    elif switch_text == "меню":
+        is_succeed = False
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT user_id FROM admins")
+        result_set = cursor.fetchall()
+        cursor.close()
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                is_succeed = True
+        if is_succeed:
+            await msg.reply(messages.menu
+                            , reply=False, reply_markup=KeyBoards.menu_admin_kb)
+            conn.commit()
+            conn.close()
+            state = dp.current_state(user=msg.from_user.id)
+            await state.reset_state()
+        else:
+            await msg.reply(messages.menu
+                            , reply=False, reply_markup=KeyBoards.menu_user_kb)
+            conn.commit()
+            conn.close()
+
+    elif switch_text == "рассылки":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM mail")
+        result_set = cursor.fetchall()
+        a = "Ваши рассылки: \n"
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                local_time = time.ctime(item[2])
+                local_time = local_time.split(' ')
+                # день недели
+                if local_time[0] == "Mon":
+                    local_time[0] = "Понедельник"
+                if local_time[0] == "Tue":
+                    local_time[0] = "Вторник"
+                if local_time[0] == "Wed":
+                    local_time[0] = "Среда"
+                if local_time[0] == "Thu":
+                    local_time[0] = "Четверг"
+                if local_time[0] == "Fri":
+                    local_time[0] = "Пятница"
+                if local_time[0] == "Sat":
+                    local_time[0] = "Суббота"
+                if local_time[0] == "Sun":
+                    local_time[0] = "Воскресенье"
+                # месяц
+                if local_time[1] == "Jun":
+                    local_time[1] = "Января"
+                if local_time[1] == "Feb":
+                    local_time[1] = "Февраля"
+                if local_time[1] == "Mar":
+                    local_time[1] = "Марта"
+                if local_time[1] == "Apr":
+                    local_time[1] = "Апреля"
+                if local_time[1] == "May":
+                    local_time[1] = "Мая"
+                if local_time[1] == "June":
+                    local_time[1] = "Июня"
+                if local_time[1] == "July":
+                    local_time[1] = "Июля"
+                if local_time[1] == "Aug":
+                    local_time[1] = "Августа"
+                if local_time[1] == "Sept":
+                    local_time[1] = "Сентября"
+                if local_time[1] == "Oct":
+                    local_time[1] = "Октября"
+                if local_time[1] == "Nov":
+                    local_time[1] = "Ноября"
+                if local_time[1] == "Dec":
+                    local_time[1] = "Декабря"
+
+                if local_time[2] == '':
+                    list = local_time[4].split(':')
+                    k = int(list[0]) + 7
+                    if k > 24:
+                        k = k - 24
+                    elif k == 24:
+                        k = "0"
+                    a = a + f" - <b>{item[1]}</b>" + '\n' + \
+                        f'Эта рассылка заканчивается {local_time[3]} {local_time[1]} ' \
+                        f'({local_time[0]}) {local_time[5]} года в {k}:{list[1]}' + '\n'
                 else:
-                    state = dp.current_state(user=msg.from_user.id)
-                    await state.set_state(AdminPanel.all()[0])
-                    await msg.reply(messages.admin_panel, reply_markup=KeyBoards.admin_panel)
-            else:
-                await msg.reply(messages.not_admin, reply_markup=KeyBoards.menu_admin_kb)
-        elif switch_text == "меню":
-            is_succeed = False
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT user_id FROM admins")
-            result_set = cursor.fetchall()
-            cursor.close()
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    is_succeed = True
-            if is_succeed:
-                await msg.reply(messages.menu
-                                , reply=False, reply_markup=KeyBoards.menu_admin_kb)
-                conn.commit()
-                conn.close()
-                state = dp.current_state(user=msg.from_user.id)
-                await state.reset_state()
-            else:
-                await msg.reply(messages.menu
-                                , reply=False, reply_markup=KeyBoards.menu_user_kb)
-                conn.commit()
-                conn.close()
-
-        elif switch_text == "рассылки":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT * FROM mail")
-            result_set = cursor.fetchall()
-            a = "Ваши рассылки: \n"
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    local_time = time.ctime(item[2])
-                    local_time = local_time.split(' ')
-                    # день недели
-                    if local_time[0] == "Mon":
-                        local_time[0] = "Понедельник"
-                    if local_time[0] == "Tue":
-                        local_time[0] = "Вторник"
-                    if local_time[0] == "Wed":
-                        local_time[0] = "Среда"
-                    if local_time[0] == "Thu":
-                        local_time[0] = "Четверг"
-                    if local_time[0] == "Fri":
-                        local_time[0] = "Пятница"
-                    if local_time[0] == "Sat":
-                        local_time[0] = "Суббота"
-                    if local_time[0] == "Sun":
-                        local_time[0] = "Воскресенье"
-                    # месяц
-                    if local_time[1] == "Jun":
-                        local_time[1] = "Января"
-                    if local_time[1] == "Feb":
-                        local_time[1] = "Февраля"
-                    if local_time[1] == "Mar":
-                        local_time[1] = "Марта"
-                    if local_time[1] == "Apr":
-                        local_time[1] = "Апреля"
-                    if local_time[1] == "May":
-                        local_time[1] = "Мая"
-                    if local_time[1] == "June":
-                        local_time[1] = "Июня"
-                    if local_time[1] == "July":
-                        local_time[1] = "Июля"
-                    if local_time[1] == "Aug":
-                        local_time[1] = "Августа"
-                    if local_time[1] == "Sept":
-                        local_time[1] = "Сентября"
-                    if local_time[1] == "Oct":
-                        local_time[1] = "Октября"
-                    if local_time[1] == "Nov":
-                        local_time[1] = "Ноября"
-                    if local_time[1] == "Dec":
-                        local_time[1] = "Декабря"
-
-                    if local_time[2] == '':
-                        list = local_time[4].split(':')
-                        k = int(list[0]) + 7
-                        if k > 24:
-                            k = k - 24
-                        elif k == 24:
-                            k = "0"
-                        a = a + f" - <b>{item[1]}</b>" + '\n' + \
-                            f'Эта рассылка заканчивается {local_time[3]} {local_time[1]} ' \
-                            f'({local_time[0]}) {local_time[5]} года в {k}:{list[1]}' + '\n'
-                    else:
-                        list = local_time[3].split(':')
-                        k = int(list[0]) + 7
-                        if k > 24:
-                            k = k - 24
-                        elif k == 24:
-                            k = "0"
-                        a = a + f" - <b>{item[1]}</b>" + '\n' + \
-                            f'Эта рассылка заканчивается {local_time[2]} {local_time[1]} ' \
-                            f'({local_time[0]}) {local_time[4]} года в {k}:{list[1]}' + '\n'
-            if a == "Ваши рассылки: \n":
-                a = 'Вам еще не приходили рассылки!'
-            await msg.reply(a, reply_markup=KeyBoards.mailing_lists_kb, parse_mode="HTML")
-        elif switch_text == 'посмотреть расписание преподавателя':
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Teacher.all()[0])
-            await msg.reply("Введите фамилию преподавателя:")
-        elif switch_text == "профиль":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT chat_id, is_teacher FROM users")
-            result_set = cursor.fetchall()
-            is_teacher = False
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    if item[1] == 'True':
-                        is_teacher = True
-            if is_teacher:
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT chat_id, real_name FROM users")
-                result_set = cursor.fetchall()
-                for i in result_set:
-                    if i[0] == msg.from_user.id:
-                        await bot.send_message(msg.from_user.id, f"Ваша фамилия: <b>{i[1]}</b>\n"
-                                               , parse_mode="HTML")
-                conn.commit()
-                conn.close()
-            else:
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT chat_id, real_name, school, user_group FROM users")
-                result_set = cursor.fetchall()
-                for i in result_set:
-                    if i[0] == msg.from_user.id:
-                        await bot.send_message(msg.from_user.id, f"Ваше имя: <b>{i[1]}</b>\n"
-                                                                 f"Ваш институт: <i><b>{i[2]}</b></i> 🎓\n"
-                                                                 f"Ваша группа: <i><b>{i[3]}</b></i> 🎓"
-                                               , parse_mode="HTML")
-                conn.commit()
-                conn.close()
-        elif switch_text == "настройки":
-            await msg.reply(messages.settings, reply_markup=KeyBoards.setting_kb)
-
-        elif switch_text == "запланированные мероприятия":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT * FROM times")
-            result_set = cursor.fetchall()
-            a = "Ваши мероприятия: \n"
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    local_time = time.ctime(item[2])
-                    local_time = local_time.split(' ')
-                    # день недели
-                    if local_time[0] == "Mon":
-                        local_time[0] = "Понедельник"
-                    if local_time[0] == "Tue":
-                        local_time[0] = "Вторник"
-                    if local_time[0] == "Wed":
-                        local_time[0] = "Среда"
-                    if local_time[0] == "Thu":
-                        local_time[0] = "Четверг"
-                    if local_time[0] == "Fri":
-                        local_time[0] = "Пятница"
-                    if local_time[0] == "Sat":
-                        local_time[0] = "Суббота"
-                    if local_time[0] == "Sun":
-                        local_time[0] = "Воскресенье"
-                    # месяц
-                    if local_time[1] == "Jun":
-                        local_time[1] = "Января"
-                    if local_time[1] == "Feb":
-                        local_time[1] = "Февраля"
-                    if local_time[1] == "Mar":
-                        local_time[1] = "Марта"
-                    if local_time[1] == "Apr":
-                        local_time[1] = "Апреля"
-                    if local_time[1] == "May":
-                        local_time[1] = "Мая"
-                    if local_time[1] == "June":
-                        local_time[1] = "Июня"
-                    if local_time[1] == "July":
-                        local_time[1] = "Июля"
-                    if local_time[1] == "Aug":
-                        local_time[1] = "Августа"
-                    if local_time[1] == "Sept":
-                        local_time[1] = "Сентября"
-                    if local_time[1] == "Oct":
-                        local_time[1] = "Октября"
-                    if local_time[1] == "Nov":
-                        local_time[1] = "Ноября"
-                    if local_time[1] == "Dec":
-                        local_time[1] = "Декабря"
-                    if local_time[2] == '':
-                        list = local_time[4].split(':')
-                        k = int(list[0]) + 7
-                        if k > 24:
-                            k = k - 24
-                        elif k == 24:
-                            k = "0"
-                        a = a + f" - <b>{item[1]}</b>" + '\n' + \
-                            f'Это мероприятие заканчивается {local_time[3]} {local_time[1]} ' \
-                            f'({local_time[0]}) {local_time[5]} года в {k}:{list[1]}\n'
-
-                    else:
-                        list = local_time[3].split(':')
-                        k = int(list[0]) + 7
-                        if k > 24:
-                            k = k - 24
-                        elif k == 24:
-                            k = "0"
-                        a = a + f" - <b>{item[1]}</b>" + '\n' + \
-                            f'Это мероприятие заканчивается {local_time[2]} {local_time[1]} ' \
-                            f'({local_time[0]}) {local_time[4]} года в {k}:{list[1]}\n'
-            if a == "Ваши мероприятия: \n":
-                a = 'У вас нет мероприятий!'
-            await msg.reply(a, reply_markup=KeyBoards.events_kb, parse_mode="HTML")
-
-        elif switch_text == "изменить информацию":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT chat_id, is_teacher FROM users")
-            result_set = cursor.fetchall()
-            is_teacher = False
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    if item[1] == 'True':
-                        is_teacher = True
-            if is_teacher:
-                await msg.reply(messages.choose_want_change, reply_markup=KeyBoards.change_information_kb2)
-            else:
-                await msg.reply(messages.choose_want_change, reply_markup=KeyBoards.change_information_kb)
-
-        elif switch_text == "поменять преподавателя":
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Register.all()[5])
-            await msg.reply(messages.teacher_surname2)
-
-        elif switch_text == "добавить мероприятие":
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Events.all()[0])
-            await msg.reply(messages.events_write, reply_markup=KeyBoards.universal_kb)
-
-        elif switch_text == "удалить мероприятие":
-            a = False
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT * FROM times")
-            result_set = cursor.fetchall()
-            keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    keyboard.add(item[1])
-                    incoming_inst2.append(item[1])
-                    a = True
-            if a == True:
-                state = dp.current_state(user=msg.from_user.id)
-                await state.set_state(Delete.all()[0])
-                await msg.reply(messages.choose_event_del, reply_markup=keyboard)
-            else:
-                await bot.send_message(msg.from_user.id, messages.event_not)
-
-        elif switch_text == "удалить рассылку":
-            a = False
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT * FROM mail")
-            result_set = cursor.fetchall()
-            keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    keyboard.add(item[1])
-                    incoming_inst2.append(item[1])
-                    a = True
-            if a == True:
-                state = dp.current_state(user=msg.from_user.id)
-                await state.set_state(Delete.all()[1])
-                await msg.reply(messages.choose_mail_del, reply_markup=keyboard)
-            else:
-                await bot.send_message(msg.from_user.id, messages.mail_not)
-
-        elif switch_text == "назад":
-            await msg.reply(messages.settings, reply_markup=KeyBoards.setting_kb)
-
-        # Изменение имени
-        elif switch_text == "изменить имя":
+                    list = local_time[3].split(':')
+                    k = int(list[0]) + 7
+                    if k > 24:
+                        k = k - 24
+                    elif k == 24:
+                        k = "0"
+                    a = a + f" - <b>{item[1]}</b>" + '\n' + \
+                        f'Эта рассылка заканчивается {local_time[2]} {local_time[1]} ' \
+                        f'({local_time[0]}) {local_time[4]} года в {k}:{list[1]}' + '\n'
+        if a == "Ваши рассылки: \n":
+            a = 'Вам еще не приходили рассылки!'
+        await msg.reply(a, reply_markup=KeyBoards.mailing_lists_kb, parse_mode="HTML")
+    elif switch_text == 'посмотреть расписание преподавателя':
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Teacher.all()[0])
+        await msg.reply("Введите фамилию преподавателя:")
+    elif switch_text == "профиль":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT chat_id, is_teacher FROM users")
+        result_set = cursor.fetchall()
+        is_teacher = False
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                if item[1] == 'True':
+                    is_teacher = True
+        if is_teacher:
             conn = sqlite3.connect('db.db')
             cursor = conn.cursor()
             cursor.execute(f"SELECT chat_id, real_name FROM users")
             result_set = cursor.fetchall()
             for i in result_set:
                 if i[0] == msg.from_user.id:
-                    await bot.send_message(msg.from_user.id, f"Ваше прошлое имя: {i[1]}\n")
+                    await bot.send_message(msg.from_user.id, f"Ваша фамилия: <b>{i[1]}</b>\n"
+                                           , parse_mode="HTML")
             conn.commit()
             conn.close()
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Change.all()[0])
-            await bot.send_message(msg.from_user.id, "Введите ваше имя 👇")
-
-        # Изменение группы
-        elif switch_text == "изменить группу":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT chat_id, user_group, school FROM users")
-            result_set = cursor.fetchall()
-            for i in result_set:
-                if i[0] == msg.from_user.id:
-                    await bot.send_message(msg.from_user.id,
-                                           f"Ваш институт: <b>{i[2]}</b>\nВаша группа:"
-                                           f" <b>{i[1]}</b>\n", parse_mode='HTML')
-            conn.commit()
-            conn.close()
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Register.all()[3])
-            await msg.reply(messages.choose_inst_change, reply_markup=KeyBoards.institute_kb)
-
-        elif switch_text == "посмотреть расписание другой группы":
-            await msg.reply(messages.choose_inst, reply_markup=KeyBoards.institute_kb)
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(ScheduleUser.all()[0])
-        elif switch_text == "посмотреть расписание группы или преподавателя":
-            await msg.reply(messages.select, reply_markup=KeyBoards.schedule_kb)
-        elif switch_text == "посмотреть расписание группы":
-            await msg.reply(messages.choose_inst, reply_markup=KeyBoards.institute_kb)
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(ScheduleUser.all()[0])
-        elif switch_text == 'отключить или включить рассылку':
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT `7utra_on`, `mail_para_on` FROM users WHERE chat_id = '{msg.from_user.id}'")
-            result_set = cursor.fetchall()
-            utra_on = False
-            mail = False
-            event = False
-            keyboard = ReplyKeyboardMarkup(resize_keyboard=True).add("Меню")
-            for i in result_set:
-                if i[0] == "True":
-                    utra_on = True
-                if i[1] == 'True':
-                    mail = True
-
-            if utra_on == True:
-                keyboard.add("Выключить рассылку в 7 утра")
-            else:
-                keyboard.add("Включить рассылку в 7 утра")
-            if mail == True:
-                keyboard.add("Выключить рассылку о наступлении пары")
-            else:
-                keyboard.add("Включить рассылку о наступлении пары")
-
-            await msg.reply("Нажмите кнопку, чтобы включить или отключить рассылку", reply_markup=keyboard)
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Turn_on_off.all()[0])
-
-        elif switch_text == 'поменять язык':
-            await msg.reply("Вы точно хотите поменять язык?", reply_markup=KeyBoards.yes_or_no_keyboard2)
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Change_Eu_Rus.all()[0])
-        elif switch_text == "test":
-            await msg.reply(f"{messages.greets_msg}")
-        elif switch_text == "профиль":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT chat_id, is_teacher FROM users")
-            result_set = cursor.fetchall()
-            is_teacher = False
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    if item[1] == 'True':
-                        is_teacher = True
-            if is_teacher:
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT chat_id, real_name FROM users")
-                result_set = cursor.fetchall()
-                for i in result_set:
-                    if i[0] == msg.from_user.id:
-                        await bot.send_message(msg.from_user.id, f"Ваша фамилия: <b>{i[1]}</b>\n"
-                                               , parse_mode="HTML")
-                conn.commit()
-                conn.close()
-            else:
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT chat_id, real_name, school, user_group FROM users")
-                result_set = cursor.fetchall()
-                for i in result_set:
-                    if i[0] == msg.from_user.id:
-                        await bot.send_message(msg.from_user.id, f"Ваше имя: <b>{i[1]}</b>\n"
-                                                                 f"Ваш институт: <i><b>{translate(i[2])}</b></i> 🎓\n"
-                                                                 f"Ваша группа: <i><b>{i[3]}</b></i> 🎓"
-                                               , parse_mode="HTML")
-                conn.commit()
-                conn.close()
         else:
             conn = sqlite3.connect('db.db')
             cursor = conn.cursor()
-            cursor.execute(f"SELECT ru FROM users WHERE chat_id = '{msg.from_user.id}'")
+            cursor.execute(f"SELECT chat_id, real_name, school, user_group FROM users")
             result_set = cursor.fetchall()
-            cursor.close()
-            is_ru = False
-            if result_set[0][0] == "True":
-                is_ru = True
-            if is_ru == True:
-                await bot.send_message(msg.from_user.id, messages.what)
+            for i in result_set:
+                if i[0] == msg.from_user.id:
+                    await bot.send_message(msg.from_user.id, f"Ваше имя: <b>{i[1]}</b>\n"
+                                                             f"Ваш институт: <i><b>{i[2]}</b></i> 🎓\n"
+                                                             f"Ваша группа: <i><b>{i[3]}</b></i> 🎓"
+                                           , parse_mode="HTML")
+            conn.commit()
+            conn.close()
+    elif switch_text == "настройки":
+        await msg.reply(messages.settings, reply_markup=KeyBoards.setting_kb)
+
+    elif switch_text == "запланированные мероприятия":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM times")
+        result_set = cursor.fetchall()
+        a = "Ваши мероприятия: \n"
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                local_time = time.ctime(item[2])
+                local_time = local_time.split(' ')
+                # день недели
+                if local_time[0] == "Mon":
+                    local_time[0] = "Понедельник"
+                if local_time[0] == "Tue":
+                    local_time[0] = "Вторник"
+                if local_time[0] == "Wed":
+                    local_time[0] = "Среда"
+                if local_time[0] == "Thu":
+                    local_time[0] = "Четверг"
+                if local_time[0] == "Fri":
+                    local_time[0] = "Пятница"
+                if local_time[0] == "Sat":
+                    local_time[0] = "Суббота"
+                if local_time[0] == "Sun":
+                    local_time[0] = "Воскресенье"
+                # месяц
+                if local_time[1] == "Jun":
+                    local_time[1] = "Января"
+                if local_time[1] == "Feb":
+                    local_time[1] = "Февраля"
+                if local_time[1] == "Mar":
+                    local_time[1] = "Марта"
+                if local_time[1] == "Apr":
+                    local_time[1] = "Апреля"
+                if local_time[1] == "May":
+                    local_time[1] = "Мая"
+                if local_time[1] == "June":
+                    local_time[1] = "Июня"
+                if local_time[1] == "July":
+                    local_time[1] = "Июля"
+                if local_time[1] == "Aug":
+                    local_time[1] = "Августа"
+                if local_time[1] == "Sept":
+                    local_time[1] = "Сентября"
+                if local_time[1] == "Oct":
+                    local_time[1] = "Октября"
+                if local_time[1] == "Nov":
+                    local_time[1] = "Ноября"
+                if local_time[1] == "Dec":
+                    local_time[1] = "Декабря"
+                if local_time[2] == '':
+                    list = local_time[4].split(':')
+                    k = int(list[0]) + 7
+                    if k > 24:
+                        k = k - 24
+                    elif k == 24:
+                        k = "0"
+                    a = a + f" - <b>{item[1]}</b>" + '\n' + \
+                        f'Это мероприятие заканчивается {local_time[3]} {local_time[1]} ' \
+                        f'({local_time[0]}) {local_time[5]} года в {k}:{list[1]}\n'
+
+                else:
+                    list = local_time[3].split(':')
+                    k = int(list[0]) + 7
+                    if k > 24:
+                        k = k - 24
+                    elif k == 24:
+                        k = "0"
+                    a = a + f" - <b>{item[1]}</b>" + '\n' + \
+                        f'Это мероприятие заканчивается {local_time[2]} {local_time[1]} ' \
+                        f'({local_time[0]}) {local_time[4]} года в {k}:{list[1]}\n'
+        if a == "Ваши мероприятия: \n":
+            a = 'У вас нет мероприятий!'
+        await msg.reply(a, reply_markup=KeyBoards.events_kb, parse_mode="HTML")
+
+    elif switch_text == "изменить информацию":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT chat_id, is_teacher FROM users")
+        result_set = cursor.fetchall()
+        is_teacher = False
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                if item[1] == 'True':
+                    is_teacher = True
+        if is_teacher:
+            await msg.reply(messages.choose_want_change, reply_markup=KeyBoards.change_information_kb2)
+        else:
+            await msg.reply(messages.choose_want_change, reply_markup=KeyBoards.change_information_kb)
+
+    elif switch_text == "поменять преподавателя":
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Register.all()[5])
+        await msg.reply(messages.teacher_surname2)
+
+    elif switch_text == "добавить мероприятие":
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Events.all()[0])
+        await msg.reply(messages.events_write, reply_markup=KeyBoards.universal_kb)
+
+    elif switch_text == "удалить мероприятие":
+        a = False
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM times")
+        result_set = cursor.fetchall()
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                keyboard.add(item[1])
+                incoming_inst2.append(item[1])
+                a = True
+        if a == True:
+            state = dp.current_state(user=msg.from_user.id)
+            await state.set_state(Delete.all()[0])
+            await msg.reply(messages.choose_event_del, reply_markup=keyboard)
+        else:
+            await bot.send_message(msg.from_user.id, messages.event_not)
+
+    elif switch_text == "удалить рассылку":
+        a = False
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM mail")
+        result_set = cursor.fetchall()
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                keyboard.add(item[1])
+                incoming_inst2.append(item[1])
+                a = True
+        if a == True:
+            state = dp.current_state(user=msg.from_user.id)
+            await state.set_state(Delete.all()[1])
+            await msg.reply(messages.choose_mail_del, reply_markup=keyboard)
+        else:
+            await bot.send_message(msg.from_user.id, messages.mail_not)
+
+    elif switch_text == "назад":
+        await msg.reply(messages.settings, reply_markup=KeyBoards.setting_kb)
+
+    # Изменение имени
+    elif switch_text == "изменить имя":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT chat_id, real_name FROM users")
+        result_set = cursor.fetchall()
+        for i in result_set:
+            if i[0] == msg.from_user.id:
+                await bot.send_message(msg.from_user.id, f"Ваше прошлое имя: {i[1]}\n")
+        conn.commit()
+        conn.close()
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Change.all()[0])
+        await bot.send_message(msg.from_user.id, "Введите ваше имя 👇")
+
+    # Изменение группы
+    elif switch_text == "изменить группу":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT chat_id, user_group, school FROM users")
+        result_set = cursor.fetchall()
+        for i in result_set:
+            if i[0] == msg.from_user.id:
+                await bot.send_message(msg.from_user.id,
+                                       f"Ваш институт: <b>{i[2]}</b>\nВаша группа:"
+                                       f" <b>{i[1]}</b>\n", parse_mode='HTML')
+        conn.commit()
+        conn.close()
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Register.all()[3])
+        await msg.reply(messages.choose_inst_change, reply_markup=KeyBoards.institute_kb)
+
+    elif switch_text == "посмотреть расписание другой группы":
+        await msg.reply(messages.choose_inst, reply_markup=KeyBoards.institute_kb)
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(ScheduleUser.all()[0])
+    elif switch_text == "посмотреть расписание группы или преподавателя":
+        await msg.reply(messages.select, reply_markup=KeyBoards.schedule_kb)
+    elif switch_text == "посмотреть расписание группы":
+        await msg.reply(messages.choose_inst, reply_markup=KeyBoards.institute_kb)
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(ScheduleUser.all()[0])
+    elif switch_text == 'отключить или включить рассылку':
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT `7utra_on`, `mail_para_on` FROM users WHERE chat_id = '{msg.from_user.id}'")
+        result_set = cursor.fetchall()
+        utra_on = False
+        mail = False
+        event = False
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True).add("Меню")
+        for i in result_set:
+            if i[0] == "True":
+                utra_on = True
+            if i[1] == 'True':
+                mail = True
+
+        if utra_on == True:
+            keyboard.add("Выключить рассылку в 7 утра")
+        else:
+            keyboard.add("Включить рассылку в 7 утра")
+        if mail == True:
+            keyboard.add("Выключить рассылку о наступлении пары")
+        else:
+            keyboard.add("Включить рассылку о наступлении пары")
+
+        await msg.reply("Нажмите кнопку, чтобы включить или отключить рассылку", reply_markup=keyboard)
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Turn_on_off.all()[0])
+
+    elif switch_text == 'поменять язык':
+        await msg.reply("Вы точно хотите поменять язык?", reply_markup=KeyBoards.yes_or_no_keyboard2)
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Change_Eu_Rus.all()[0])
+    elif switch_text == "test":
+        await msg.reply(f"{messages.greets_msg}")
+    elif switch_text == "профиль":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT chat_id, is_teacher FROM users")
+        result_set = cursor.fetchall()
+        is_teacher = False
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                if item[1] == 'True':
+                    is_teacher = True
+        if is_teacher:
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT chat_id, real_name FROM users")
+            result_set = cursor.fetchall()
+            for i in result_set:
+                if i[0] == msg.from_user.id:
+                    await bot.send_message(msg.from_user.id, f"Ваша фамилия: <b>{i[1]}</b>\n"
+                                           , parse_mode="HTML")
+            conn.commit()
+            conn.close()
+        else:
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT chat_id, real_name, school, user_group FROM users")
+            result_set = cursor.fetchall()
+            for i in result_set:
+                if i[0] == msg.from_user.id:
+                    await bot.send_message(msg.from_user.id, f"Ваше имя: <b>{i[1]}</b>\n"
+                                                             f"Ваш институт: <i><b>{translate(i[2])}</b></i> 🎓\n"
+                                                             f"Ваша группа: <i><b>{i[3]}</b></i> 🎓"
+                                           , parse_mode="HTML")
+            conn.commit()
+            conn.close()
+
+
+    # english
+    elif switch_text == "schedule":
+        await dp.current_state(user=msg.from_user.id).set_state(CheckSchedule.all()[0])
+        await msg.reply(messages.day_of_the_week_en, reply_markup=KeyBoards.day_of_the_week_kb_en)
+
+    elif switch_text == "admin panel":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT user_id FROM admins")
+        result_set = cursor.fetchall()
+        cursor.execute(f"SELECT user_id, is_teacher FROM admins")
+        result_set2 = cursor.fetchall()
+        cursor.close()
+        is_succeed = False
+        is_teacher = False
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                is_succeed = True
+        for item in result_set2:
+            if item[0] == msg.from_user.id:
+                if item[1] == "True":
+                    is_teacher = True
+        if is_succeed:
+            if is_teacher:
+                state = dp.current_state(user=msg.from_user.id)
+                await state.set_state(AdminPanel.all()[0])
+                await msg.reply(messages.admin_panel_en, reply_markup=KeyBoards.admin_panel_teacher_en)
             else:
-                await bot.send_message(msg.from_user.id, messages.what_en)
+                state = dp.current_state(user=msg.from_user.id)
+                await state.set_state(AdminPanel.all()[0])
+                await msg.reply(messages.admin_panel_en, reply_markup=KeyBoards.admin_panel_en)
+        else:
+            await msg.reply(messages.not_admin_en, reply_markup=KeyBoards.menu_admin_kb_en)
+    elif switch_text == "view the teacher's schedule":
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Teacher.all()[0])
+        await msg.reply("Enter the teacher's last name:")
+    elif switch_text == "menu":
+        is_succeed = False
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT user_id FROM admins")
+        result_set = cursor.fetchall()
+        cursor.close()
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                is_succeed = True
+        if is_succeed:
+            await msg.reply(messages.menu_en
+                            , reply=False, reply_markup=KeyBoards.menu_admin_kb_en)
+            conn.commit()
+            conn.close()
+            state = dp.current_state(user=msg.from_user.id)
+            await state.reset_state()
+        else:
+            await msg.reply(messages.menu_en
+                            , reply=False, reply_markup=KeyBoards.menu_user_kb_en)
+            conn.commit()
+            conn.close()
+
+    elif switch_text == "mailing lists":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM mail")
+        result_set = cursor.fetchall()
+        a = "Your mailing lists: \n"
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                local_time = time.ctime(item[2])
+                local_time = local_time.split(' ')
+                if local_time[2] == '':
+                    list = local_time[4].split(':')
+                    k = int(list[0]) + 7
+                    if k > 24:
+                        k = k - 24
+                    elif k == 24:
+                        k = "0"
+                    a = a + f" - <b>{item[1]}</b>" + '\n' + \
+                        f'This newsletter is ending {local_time[3]} {local_time[1]} ' \
+                        f'({local_time[0]}) {local_time[5]} years in {k}:{list[1]}' + '\n'
+                else:
+                    list = local_time[3].split(':')
+                    k = int(list[0]) + 7
+                    if k > 24:
+                        k = k - 24
+                    elif k == 24:
+                        k = "0"
+                    a = a + f" - <b>{item[1]}</b>" + '\n' + \
+                        f'This newsletter is ending {local_time[2]} {local_time[1]} ' \
+                        f'({local_time[0]}) {local_time[4]} years in {k}:{list[1]}' + '\n'
+        if a == "Your mailing lists: \n":
+            a = "You haven't received any mailings yet!"
+        await msg.reply(a, reply_markup=KeyBoards.mailing_lists_kb_en, parse_mode="HTML")
+
+    elif switch_text == "profile":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT chat_id, is_teacher FROM users")
+        result_set = cursor.fetchall()
+        is_teacher = False
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                if item[1] == 'True':
+                    is_teacher = True
+        if is_teacher:
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT chat_id, real_name FROM users")
+            result_set = cursor.fetchall()
+            for i in result_set:
+                if i[0] == msg.from_user.id:
+                    await bot.send_message(msg.from_user.id, f"Your last name: <b>{i[1]}</b>\n"
+                                           , parse_mode="HTML")
+            conn.commit()
+            conn.close()
+        else:
+            conn = sqlite3.connect('db.db')
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT chat_id, real_name, school, user_group FROM users")
+            result_set = cursor.fetchall()
+            for i in result_set:
+                if i[0] == msg.from_user.id:
+                    await bot.send_message(msg.from_user.id, f"Your name: <b>{i[1]}</b>\n"
+                                                             f"Your institute: <i><b>{translate(i[2])}</b></i> 🎓\n"
+                                                             f"Your group: <i><b>{i[3]}</b></i> 🎓"
+                                           , parse_mode="HTML")
+            conn.commit()
+            conn.close()
+    elif switch_text == "settings":
+        await msg.reply(messages.settings_en, reply_markup=KeyBoards.setting_kb_en)
+    elif switch_text == 'disable or enable mailing lists':
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT `7utra_on`, `mail_para_on` FROM users WHERE chat_id = '{msg.from_user.id}'")
+        result_set = cursor.fetchall()
+        utra_on = False
+        mail = False
+        event = False
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True).add("Menu")
+        for i in result_set:
+            if i[0] == "True":
+                utra_on = True
+            if i[1] == 'True':
+                mail = True
+        if utra_on == True:
+            keyboard.add("Turn off the newsletter at 7 am")
+        else:
+            keyboard.add("Turn on the newsletter at 7 am")
+        if mail == True:
+            keyboard.add("Turn off the newsletter about the occurrence of a couple")
+        else:
+            keyboard.add("Turn on the newsletter about the occurrence of a couple")
+        await msg.reply("Click the button to enable or disable the newsletter", reply_markup=keyboard)
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Turn_on_off.all()[0])
+    elif switch_text == "planned events":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM times")
+        result_set = cursor.fetchall()
+        a = "Your events: \n"
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                local_time = time.ctime(item[2])
+                local_time = local_time.split(' ')
+                # день недели
+                if local_time[2] == '':
+                    list = local_time[4].split(':')
+                    k = int(list[0]) + 7
+                    if k > 24:
+                        k = k - 24
+                    elif k == 24:
+                        k = "0"
+                    a = a + f" - <b>{item[1]}</b>" + '\n' + \
+                        f'This event ends {local_time[3]} {local_time[1]} ' \
+                        f'({local_time[0]}) {local_time[5]} years in {k}:{list[1]}\n'
+
+                else:
+                    list = local_time[3].split(':')
+                    k = int(list[0]) + 7
+                    if k > 24:
+                        k = k - 24
+                    elif k == 24:
+                        k = "0"
+                    a = a + f" - <b>{item[1]}</b>" + '\n' + \
+                        f'This event ends {local_time[2]} {local_time[1]} ' \
+                        f'({local_time[0]}) {local_time[4]} years in {k}:{list[1]}\n'
+        if a == "Your events: \n":
+            a = "You don't have any events!"
+        await msg.reply(a, reply_markup=KeyBoards.events_kb_en, parse_mode="HTML")
+
+    elif switch_text == "change information":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT chat_id, is_teacher FROM users")
+        result_set = cursor.fetchall()
+        is_teacher = False
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                if item[1] == 'True':
+                    is_teacher = True
+        if is_teacher:
+            await msg.reply(messages.choose_want_change_en, reply_markup=KeyBoards.change_information_kb2_en)
+        else:
+            await msg.reply(messages.choose_want_change_en, reply_markup=KeyBoards.change_information_kb_en)
+
+    elif switch_text == "change the teacher":
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Register.all()[5])
+        await msg.reply(messages.teacher_surname_en2)
+
+    elif switch_text == "add an event":
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Events.all()[0])
+        await msg.reply(messages.events_write_en, reply_markup=KeyBoards.universal_kb_en)
+
+    elif switch_text == "delete an event":
+        a = False
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM times")
+        result_set = cursor.fetchall()
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                keyboard.add(item[1])
+                incoming_inst2.append(item[1])
+                a = True
+        if a == True:
+            state = dp.current_state(user=msg.from_user.id)
+            await state.set_state(Delete.all()[0])
+            await msg.reply(messages.choose_event_del_en, reply_markup=keyboard)
+        else:
+            await bot.send_message(msg.from_user.id, messages.event_not_en)
+
+    elif switch_text == "delete a mailing list":
+        a = False
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM mail")
+        result_set = cursor.fetchall()
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+        for item in result_set:
+            if item[0] == msg.from_user.id:
+                keyboard.add(item[1])
+                incoming_inst2.append(item[1])
+                a = True
+        if a == True:
+            state = dp.current_state(user=msg.from_user.id)
+            await state.set_state(Delete.all()[1])
+            await msg.reply(messages.choose_mail_del_en, reply_markup=keyboard)
+        else:
+            await bot.send_message(msg.from_user.id, messages.mail_not_en)
+
+    elif switch_text == "back":
+        await msg.reply(messages.settings_en, reply_markup=KeyBoards.setting_kb_en)
+    elif switch_text == "view the group schedule or teacher's schedule":
+        await msg.reply(messages.select, reply_markup=KeyBoards.schedule_kb_en)
+    # Изменение имени
+    elif switch_text == "change the name":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT chat_id, real_name FROM users")
+        result_set = cursor.fetchall()
+        for i in result_set:
+            if i[0] == msg.from_user.id:
+                await bot.send_message(msg.from_user.id, f"Your past name: {i[1]}\n")
+        conn.commit()
+        conn.close()
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Change.all()[0])
+        await bot.send_message(msg.from_user.id, "Enter your name 👇")
+
+    # Изменение группы
+    elif switch_text == "change a group":
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT chat_id, user_group, school FROM users")
+        result_set = cursor.fetchall()
+        for i in result_set:
+            if i[0] == msg.from_user.id:
+                await bot.send_message(msg.from_user.id,
+                                       f"Your institute: <b>{translate(i[2])}</b>\nYour group:"
+                                       f" <b>{i[1]}</b>\n", parse_mode='HTML')
+        conn.commit()
+        conn.close()
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Register.all()[3])
+        await msg.reply(messages.choose_inst_change_en, reply_markup=KeyBoards.institute_kb)
+
+    elif switch_text == "view the group schedule":
+        await msg.reply(messages.choose_inst_en, reply_markup=KeyBoards.institute_kb)
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(ScheduleUser.all()[0])
+
+    elif switch_text == "посмотреть расписание группы":
+        await msg.reply(messages.choose_inst_en, reply_markup=KeyBoards.institute_kb)
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(ScheduleUser.all()[0])
+    elif switch_text == 'change the language':
+        await msg.reply("Are you sure you want to change the language?",
+                        reply_markup=KeyBoards.yes_or_no_keyboard2_en)
+        state = dp.current_state(user=msg.from_user.id)
+        await state.set_state(Change_Eu_Rus.all()[0])
+    elif switch_text == "test":
+        await msg.reply(f"{messages.greets_msg}")
     else:
-        # english
-        if switch_text == "schedule":
-            await dp.current_state(user=msg.from_user.id).set_state(CheckSchedule.all()[0])
-            await msg.reply(messages.day_of_the_week_en, reply_markup=KeyBoards.day_of_the_week_kb_en)
-
-        elif switch_text == "admin panel":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT user_id FROM admins")
-            result_set = cursor.fetchall()
-            cursor.execute(f"SELECT user_id, is_teacher FROM admins")
-            result_set2 = cursor.fetchall()
-            cursor.close()
-            is_succeed = False
-            is_teacher = False
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    is_succeed = True
-            for item in result_set2:
-                if item[0] == msg.from_user.id:
-                    if item[1] == "True":
-                        is_teacher = True
-            if is_succeed:
-                if is_teacher:
-                    state = dp.current_state(user=msg.from_user.id)
-                    await state.set_state(AdminPanel.all()[0])
-                    await msg.reply(messages.admin_panel_en, reply_markup=KeyBoards.admin_panel_teacher_en)
-                else:
-                    state = dp.current_state(user=msg.from_user.id)
-                    await state.set_state(AdminPanel.all()[0])
-                    await msg.reply(messages.admin_panel_en, reply_markup=KeyBoards.admin_panel_en)
-            else:
-                await msg.reply(messages.not_admin_en, reply_markup=KeyBoards.menu_admin_kb_en)
-        elif switch_text == "view the teacher's schedule":
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Teacher.all()[0])
-            await msg.reply("Enter the teacher's last name:")
-        elif switch_text == "menu":
-            is_succeed = False
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT user_id FROM admins")
-            result_set = cursor.fetchall()
-            cursor.close()
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    is_succeed = True
-            if is_succeed:
-                await msg.reply(messages.menu_en
-                                , reply=False, reply_markup=KeyBoards.menu_admin_kb_en)
-                conn.commit()
-                conn.close()
-                state = dp.current_state(user=msg.from_user.id)
-                await state.reset_state()
-            else:
-                await msg.reply(messages.menu_en
-                                , reply=False, reply_markup=KeyBoards.menu_user_kb_en)
-                conn.commit()
-                conn.close()
-
-        elif switch_text == "mailing lists":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT * FROM mail")
-            result_set = cursor.fetchall()
-            a = "Your mailing lists: \n"
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    local_time = time.ctime(item[2])
-                    local_time = local_time.split(' ')
-                    if local_time[2] == '':
-                        list = local_time[4].split(':')
-                        k = int(list[0]) + 7
-                        if k > 24:
-                            k = k - 24
-                        elif k == 24:
-                            k = "0"
-                        a = a + f" - <b>{item[1]}</b>" + '\n' + \
-                            f'This newsletter is ending {local_time[3]} {local_time[1]} ' \
-                            f'({local_time[0]}) {local_time[5]} years in {k}:{list[1]}' + '\n'
-                    else:
-                        list = local_time[3].split(':')
-                        k = int(list[0]) + 7
-                        if k > 24:
-                            k = k - 24
-                        elif k == 24:
-                            k = "0"
-                        a = a + f" - <b>{item[1]}</b>" + '\n' + \
-                            f'This newsletter is ending {local_time[2]} {local_time[1]} ' \
-                            f'({local_time[0]}) {local_time[4]} years in {k}:{list[1]}' + '\n'
-            if a == "Your mailing lists: \n":
-                a = "You haven't received any mailings yet!"
-            await msg.reply(a, reply_markup=KeyBoards.mailing_lists_kb_en, parse_mode="HTML")
-
-        elif switch_text == "profile":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT chat_id, is_teacher FROM users")
-            result_set = cursor.fetchall()
-            is_teacher = False
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    if item[1] == 'True':
-                        is_teacher = True
-            if is_teacher:
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT chat_id, real_name FROM users")
-                result_set = cursor.fetchall()
-                for i in result_set:
-                    if i[0] == msg.from_user.id:
-                        await bot.send_message(msg.from_user.id, f"Your last name: <b>{i[1]}</b>\n"
-                                               , parse_mode="HTML")
-                conn.commit()
-                conn.close()
-            else:
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT chat_id, real_name, school, user_group FROM users")
-                result_set = cursor.fetchall()
-                for i in result_set:
-                    if i[0] == msg.from_user.id:
-                        await bot.send_message(msg.from_user.id, f"Your name: <b>{i[1]}</b>\n"
-                                                                 f"Your institute: <i><b>{translate(i[2])}</b></i> 🎓\n"
-                                                                 f"Your group: <i><b>{i[3]}</b></i> 🎓"
-                                               , parse_mode="HTML")
-                conn.commit()
-                conn.close()
-        elif switch_text == "settings":
-            await msg.reply(messages.settings_en, reply_markup=KeyBoards.setting_kb_en)
-        elif switch_text == 'disable or enable mailing lists':
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT `7utra_on`, `mail_para_on` FROM users WHERE chat_id = '{msg.from_user.id}'")
-            result_set = cursor.fetchall()
-            utra_on = False
-            mail = False
-            event = False
-            keyboard = ReplyKeyboardMarkup(resize_keyboard=True).add("Menu")
-            for i in result_set:
-                if i[0] == "True":
-                    utra_on = True
-                if i[1] == 'True':
-                    mail = True
-            if utra_on == True:
-                keyboard.add("Turn off the newsletter at 7 am")
-            else:
-                keyboard.add("Turn on the newsletter at 7 am")
-            if mail == True:
-                keyboard.add("Turn off the newsletter about the occurrence of a couple")
-            else:
-                keyboard.add("Turn on the newsletter about the occurrence of a couple")
-            await msg.reply("Click the button to enable or disable the newsletter", reply_markup=keyboard)
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Turn_on_off.all()[0])
-        elif switch_text == "planned events":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT * FROM times")
-            result_set = cursor.fetchall()
-            a = "Your events: \n"
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    local_time = time.ctime(item[2])
-                    local_time = local_time.split(' ')
-                    # день недели
-                    if local_time[2] == '':
-                        list = local_time[4].split(':')
-                        k = int(list[0]) + 7
-                        if k > 24:
-                            k = k - 24
-                        elif k == 24:
-                            k = "0"
-                        a = a + f" - <b>{item[1]}</b>" + '\n' + \
-                            f'This event ends {local_time[3]} {local_time[1]} ' \
-                            f'({local_time[0]}) {local_time[5]} years in {k}:{list[1]}\n'
-
-                    else:
-                        list = local_time[3].split(':')
-                        k = int(list[0]) + 7
-                        if k > 24:
-                            k = k - 24
-                        elif k == 24:
-                            k = "0"
-                        a = a + f" - <b>{item[1]}</b>" + '\n' + \
-                            f'This event ends {local_time[2]} {local_time[1]} ' \
-                            f'({local_time[0]}) {local_time[4]} years in {k}:{list[1]}\n'
-            if a == "Your events: \n":
-                a = "You don't have any events!"
-            await msg.reply(a, reply_markup=KeyBoards.events_kb_en, parse_mode="HTML")
-
-        elif switch_text == "change information":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT chat_id, is_teacher FROM users")
-            result_set = cursor.fetchall()
-            is_teacher = False
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    if item[1] == 'True':
-                        is_teacher = True
-            if is_teacher:
-                await msg.reply(messages.choose_want_change_en, reply_markup=KeyBoards.change_information_kb2_en)
-            else:
-                await msg.reply(messages.choose_want_change_en, reply_markup=KeyBoards.change_information_kb_en)
-
-        elif switch_text == "change the teacher":
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Register.all()[5])
-            await msg.reply(messages.teacher_surname_en2)
-
-        elif switch_text == "add an event":
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Events.all()[0])
-            await msg.reply(messages.events_write_en, reply_markup=KeyBoards.universal_kb_en)
-
-        elif switch_text == "delete an event":
-            a = False
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT * FROM times")
-            result_set = cursor.fetchall()
-            keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    keyboard.add(item[1])
-                    incoming_inst2.append(item[1])
-                    a = True
-            if a == True:
-                state = dp.current_state(user=msg.from_user.id)
-                await state.set_state(Delete.all()[0])
-                await msg.reply(messages.choose_event_del_en, reply_markup=keyboard)
-            else:
-                await bot.send_message(msg.from_user.id, messages.event_not_en)
-
-        elif switch_text == "delete a mailing list":
-            a = False
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT * FROM mail")
-            result_set = cursor.fetchall()
-            keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-            for item in result_set:
-                if item[0] == msg.from_user.id:
-                    keyboard.add(item[1])
-                    incoming_inst2.append(item[1])
-                    a = True
-            if a == True:
-                state = dp.current_state(user=msg.from_user.id)
-                await state.set_state(Delete.all()[1])
-                await msg.reply(messages.choose_mail_del_en, reply_markup=keyboard)
-            else:
-                await bot.send_message(msg.from_user.id, messages.mail_not_en)
-
-        elif switch_text == "back":
-            await msg.reply(messages.settings_en, reply_markup=KeyBoards.setting_kb_en)
-        elif switch_text == "view the group schedule or teacher's schedule":
-            await msg.reply(messages.select, reply_markup=KeyBoards.schedule_kb_en)
-        # Изменение имени
-        elif switch_text == "change the name":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT chat_id, real_name FROM users")
-            result_set = cursor.fetchall()
-            for i in result_set:
-                if i[0] == msg.from_user.id:
-                    await bot.send_message(msg.from_user.id, f"Your past name: {i[1]}\n")
-            conn.commit()
-            conn.close()
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Change.all()[0])
-            await bot.send_message(msg.from_user.id, "Enter your name 👇")
-
-        # Изменение группы
-        elif switch_text == "change a group":
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT chat_id, user_group, school FROM users")
-            result_set = cursor.fetchall()
-            for i in result_set:
-                if i[0] == msg.from_user.id:
-                    await bot.send_message(msg.from_user.id,
-                                           f"Your institute: <b>{translate(i[2])}</b>\nYour group:"
-                                           f" <b>{i[1]}</b>\n", parse_mode='HTML')
-            conn.commit()
-            conn.close()
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Register.all()[3])
-            await msg.reply(messages.choose_inst_change_en, reply_markup=KeyBoards.institute_kb)
-
-        elif switch_text == "view the group schedule":
-            await msg.reply(messages.choose_inst_en, reply_markup=KeyBoards.institute_kb)
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(ScheduleUser.all()[0])
-
-        elif switch_text == "посмотреть расписание группы":
-            await msg.reply(messages.choose_inst_en, reply_markup=KeyBoards.institute_kb)
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(ScheduleUser.all()[0])
-        elif switch_text == 'change the language':
-            await msg.reply("Are you sure you want to change the language?",
-                            reply_markup=KeyBoards.yes_or_no_keyboard2_en)
-            state = dp.current_state(user=msg.from_user.id)
-            await state.set_state(Change_Eu_Rus.all()[0])
-        elif switch_text == "test":
-            await msg.reply(f"{messages.greets_msg}")
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT ru FROM users WHERE chat_id = '{msg.from_user.id}'")
+        result_set = cursor.fetchall()
+        cursor.close()
+        is_ru = False
+        if result_set[0][0] == "True":
+            is_ru = True
+        if is_ru == True:
+            await bot.send_message(msg.from_user.id, messages.what)
         else:
-            conn = sqlite3.connect('db.db')
-            cursor = conn.cursor()
-            cursor.execute(f"SELECT ru FROM users WHERE chat_id = '{msg.from_user.id}'")
-            result_set = cursor.fetchall()
-            cursor.close()
-            is_ru = False
-            if result_set[0][0] == "True":
-                is_ru = True
-            if is_ru == True:
-                await bot.send_message(msg.from_user.id, messages.what)
-            else:
-                await bot.send_message(msg.from_user.id, messages.what_en)
+            await bot.send_message(msg.from_user.id, messages.what_en)
 
 
 if __name__ == "__main__":
